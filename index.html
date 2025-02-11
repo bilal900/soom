@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فيديو متجاوب مع شريط تواصل</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: black; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        video { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 16 / 9; }
+
+        /* الشريط الجانبي */
+        .sidebar {
+            position: fixed;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, background 0.3s, opacity 0.3s;
+            opacity: 0.7; /* تعيين الشفافية */
+        }
+
+        .sidebar a:hover {
+            transform: scale(1.1);
+            opacity: 1; /* عند التمرير، تجعل الأيقونة أكثر وضوحًا */
+        }
+
+        .sidebar img {
+            width: 30px;
+            height: 30px;
+        }
+
+        /* الرسالة عند تدوير الهاتف */
+        #rotate-message {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <!-- شريط التواصل -->
+    <div class="sidebar">
+        <a href="https://wa.me/1234567890" target="_blank"><img src="whatsapp.png" alt="whatsapp"></a>
+        <a href="https://www.instagram.com/yourprofile" target="_blank"><img src="instagram.png" alt="instagram"></a>
+        <a href="tel:+1234567890"><img src="call.png" alt="call"></a>
+        <a href="https://wa.me/1234567890" target="_blank"><img src="mail.png" alt="Email"></a>
+
+    </div>
+
+    <!-- فيديو سطح المكتب -->
+    <video autoplay muted loop playsinline id="video-desktop">
+        <source src="13.mp4" type="video/mp4">
+    </video>
+
+    <!-- فيديو الجوال -->
+    <video autoplay muted loop playsinline id="video-mobile" style="display: none;">
+        <source src="14.mp4" type="video/mp4">
+    </video>
+
+    <!-- فيديو التابلت (عمودي) -->
+    <video autoplay muted loop playsinline id="video-tablet" style="display: none;">
+        <source src="15.mp4" type="video/mp4">
+    </video>
+
+    <!-- فيديو التابلت (أفقي) -->
+    <video autoplay muted loop playsinline id="video-tablet-landscape" style="display: none;">
+        <source src="14.mp4" type="video/mp4">
+    </video>
+
+    <!-- فيديو iPad -->
+    <video autoplay muted loop playsinline id="video-ipad" style="display: none;">
+        <source src="ipad.mp4" type="video/mp4">
+    </video>
+
+    <!-- رسالة التحذير عند التدوير -->
+    <div id="rotate-message">❌ الرجاء استخدام الهاتف بوضع عمودي 📱</div>
+
+    <script>
+        function lockOrientation() {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock("portrait").catch(error => {
+                    console.warn("لم يتمكن المتصفح من قفل الاتجاه:", error);
+                });
+            }
+        }
+
+        function checkOrientation() {
+            let isMobileOrTablet = window.innerWidth <= 1200;
+            let isLandscape = window.innerWidth > window.innerHeight;
+
+            if (isMobileOrTablet && isLandscape) {
+                document.getElementById("rotate-message").style.display = "flex";
+            } else {
+                document.getElementById("rotate-message").style.display = "none";
+            }
+        }
+
+        function playCorrectVideo() {
+            const videoDesktop = document.getElementById('video-desktop');
+            const videoMobile = document.getElementById('video-mobile');
+            const videoTablet = document.getElementById('video-tablet');
+            const videoTabletLandscape = document.getElementById('video-tablet-landscape');
+            const videoIpad = document.getElementById('video-ipad');
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            videoDesktop.style.display = "none";
+            videoMobile.style.display = "none";
+            videoTablet.style.display = "none";
+            videoTabletLandscape.style.display = "none";
+            videoIpad.style.display = "none";
+
+            if (width <= 767 && height > width) {
+                videoMobile.style.display = 'block';
+                videoMobile.play();
+            } else if (width >= 768 && width <= 1024 && height > width) {
+                videoTablet.style.display = 'block';
+                videoTablet.play();
+            } else if (width >= 768 && width <= 1024 && height <= width) {
+                videoTabletLandscape.style.display = 'block';
+                videoTabletLandscape.play();
+            } else if (width >= 1080 && width <= 1200 && height >= 800 && height <= 840) {
+                videoIpad.style.display = 'block';
+                videoIpad.play();
+            } else {
+                videoDesktop.style.display = 'block';
+                videoDesktop.play();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            lockOrientation();
+            checkOrientation();
+            playCorrectVideo();
+        });
+
+        window.addEventListener("resize", function() {
+            checkOrientation();
+            playCorrectVideo();
+        });
+    </script>
+</body>
+</html>
